@@ -1,3 +1,5 @@
+import { useParams } from "react-router";
+import * as db from "../../Database";
 import { FaCheckCircle, FaFileAlt, FaPlus } from "react-icons/fa";
 import { CiSearch } from "react-icons/ci";
 import { BsGripVertical } from "react-icons/bs";
@@ -5,8 +7,11 @@ import LessonControlButtons from "../Modules/LessonControlButtons";
 import AssignmentControlButtons from "./AssignmentControlButtons";
 import { TfiWrite } from "react-icons/tfi";
 import { IoEllipsisVertical } from "react-icons/io5";
+import { Link } from "react-router-dom";
 
 export default function Assignments() {
+  const { cid } = useParams();
+  const assignments = db.assignments;
     return (
       <div id="wd-assignments">
         <input type="search" 
@@ -36,93 +41,32 @@ export default function Assignments() {
               </div>
             </div>
             <ul className="wd-lessons list-group rounded-0">
-              <li id="assignment1" className="wd-lesson list-group-item p-2 ps-1">
-                <div className="assignments-list">
-                  <div className="d-flex align-items-center">
-                    <div className="border-left border-success me-2"></div>
-                    <BsGripVertical className="fs-3" />
-                    <TfiWrite className="me-3 fs-4" />
-                    <div>
-                      <a className="wd-assignment-link"
-                        href="#/Kanbas/Courses/1234/Assignments/edit">
-                        <h5><b>A1</b></h5>
-                      </a>
-                      <p><span className="wd-fg-color-red">Multiple Modules</span> | <b>Not available until</b> May 6 at 12:00am |
-                      <br/><b>Due</b> May 13 at 11:59pm | 100 pts</p>
+            {assignments
+              .filter((assignment: any) => assignment.course === cid)
+              .map((assignment: any) => (
+                <li id="assignment1" className="wd-lesson list-group-item p-2 ps-1">
+                    <div className="assignments-list">
+                      <div className="d-flex align-items-center">
+                        <div className="border-left border-success me-2"></div>
+                        <BsGripVertical className="fs-3" />
+                        <TfiWrite className="me-3 fs-4" />
+                        <div>
+                          <Link className="wd-assignment-link"
+                            to={assignment._id}>
+                            <h5><b>{assignment.title}</b></h5>
+                          </Link>
+                          <p><span className="wd-fg-color-red">Multiple Modules</span> 
+                            | <b>Not available until</b> {new Date(assignment.availableDate).toLocaleString('en-US', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
+                            | <br/><b>Due</b> {new Date(assignment.dueDate).toLocaleString('en-US', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
+                            | {assignment.points} pts</p>
+                        </div>
+                          <span className="ms-auto"><AssignmentControlButtons/></span>
+                      </div>
                     </div>
-                      <span className="ms-auto"><AssignmentControlButtons/></span>
-                  </div>
-                </div>
-              </li>
-              <li id="assignment1" className="wd-lesson list-group-item p-2 ps-1">
-                <div className="assignments-list">
-                  <div className="d-flex align-items-center">
-                    <div className="border-left border-success me-2"></div>
-                    <BsGripVertical className="fs-3" />
-                    <TfiWrite className="me-3 fs-4" />
-                    <div>
-                      <a className="wd-assignment-link"
-                        href="#/Kanbas/Courses/1234/Assignments/edit">
-                        <h5><b>A2</b></h5>
-                      </a>
-                      <p><span className="wd-fg-color-red">Multiple Modules</span> | <b>Not available until</b> May 13 at 12:00am |
-                      <br/><b>Due</b> May 20 at 11:59pm | 100 pts</p>
-                    </div>
-                      <span className="ms-auto"><AssignmentControlButtons/></span>
-                  </div>
-                </div>
-              </li>
-              <li id="assignment1" className="wd-lesson list-group-item p-2 ps-1">
-                <div className="assignments-list">
-                  <div className="d-flex align-items-center">
-                    <div className="border-left border-success me-2"></div>
-                    <BsGripVertical className="fs-3" />
-                    <TfiWrite className="me-3 fs-4" />
-                    <div>
-                      <a className="wd-assignment-link"
-                        href="#/Kanbas/Courses/1234/Assignments/edit">
-                        <h5><b>A3</b></h5>
-                      </a>
-                      <p><span className="wd-fg-color-red">Multiple Modules</span> | <b>Not available until</b> May 20 at 12:00am |
-                      <br/><b>Due</b> May 27 at 11:59pm | 100 pts</p>
-                    </div>
-                      <span className="ms-auto"><AssignmentControlButtons/></span>
-                  </div>
-                </div>
-              </li>
+                  </li>
+                ))}
             </ul>
           </li>
         </ul>
-        <div>
-          <h3 id="wd-assignments-title">
-            ASSIGNMENTS 40% of Total <button>+</button>
-          </h3>
-          <ul id="wd-assignment-list">
-            <li className="wd-assignment-list-item">
-              <a className="wd-assignment-link"
-                href="#/Kanbas/Courses/1234/Assignments/123">
-                A1 - ENV + HTML
-              </a> <br/>
-              Multiple Modules | <b>Not available until</b> May 6 at 12:00am |
-              <br/><b>Due</b> May 13 at 11:59pm | 100 pts
-            </li>
-            <li className="wd-assignment-list-item">
-              <a className="wd-assignment-link"
-                href="#/Kanbas/Courses/1234/Assignments/456">
-                A2 - CSS + BOOSTRAP
-              </a> <br/>
-              Multiple Modules | <b>Not available until</b> May 13 at 12:00am |
-              <br/><b>Due</b> May 20 at 11:59pm | 100 pts
-            </li>
-            <li className="wd-assignment-list-item">
-              <a className="wd-assignment-link"
-                href="#/Kanbas/Courses/1234/Assignments/789">
-                A3 - JAVASCRIPT + REACT
-              </a> <br/>
-              Multiple Modules | <b>Not available until</b> May 20 at 12:00am |
-              <br/><b>Due</b> May 27 at 11:59pm | 100 pts
-            </li>
-          </ul>
-        </div>
       </div>
   );}

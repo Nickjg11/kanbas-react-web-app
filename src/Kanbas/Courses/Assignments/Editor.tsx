@@ -1,4 +1,10 @@
+import { useParams } from "react-router";
+import * as db from "../../Database";
+import { Link } from "react-router-dom";
 export default function AssignmentEditor() {
+  const { aid } = useParams();
+  const assignment = db.assignments.find((a) => a._id === aid);
+    if (!assignment) return null;
     return (
       <div id="wd-assignments-editor">
         <div id="wd-css-styling-forms">
@@ -6,23 +12,13 @@ export default function AssignmentEditor() {
             <label htmlFor="input1" className="form-label">
               Assignment Name</label>
             <input type="name" className="form-control"
-              id="input1" value="A1"/>
+              id="input1" defaultValue={assignment.title}/>
           </div>
           <div className="mb-3">
             <textarea className="form-control" 
               id="textarea1" 
               rows={15}
-              value="The assignment is available online
-              Submit a link to the landing page of your Web application running on Netlify.
-
-              The Landing page should include the following:
-
-              * You full name and section
-              * Links to each of the lab assignments
-              * Links to the Kanbas application
-              * Links to all relevant source code repositories
-
-              The Kanbas application shoud include a link to navigate back to the landing page.">
+              defaultValue={assignment.description}>
             </textarea>
           </div>
           <div id="wd-css-left-right-layout">
@@ -31,7 +27,7 @@ export default function AssignmentEditor() {
                 <label className="mt-2 mb-2 pe-3 float-end">Points</label>
               </div>
               <div className="wd-grid-col-half-page">
-                <input className="form-control" type="number" value="100"/>
+                <input className="form-control" type="number" defaultValue={assignment.points}/>
               </div>
             </div>
             <div className="mb-3 wd-grid-row">
@@ -111,23 +107,34 @@ export default function AssignmentEditor() {
                 <p className="mt-4">
                   <b>Due</b>
                 </p>
-                <input className="mb-3 form-control" type="date"/>
+                <input className="mb-3 form-control" type="date" 
+                  defaultValue={`${new Date(assignment.dueDate).getFullYear()}-${String(new Date(assignment.dueDate).getMonth() + 1).padStart(2, '0')}-${String(new Date(assignment.dueDate).getDate()).padStart(2, '0')}`}/>
                 <div className="wd-grid-row">
                   <div className="mb-3 wd-grid-col-half-page">
                     <label className="mt-2 mb-2 pe-3 float-start ps-2"><b>Available from</b></label>
                     <div className="wd-grid-row">
-                      <input className="form-control" type="date"/>
+                      <input className="form-control" type="date"
+                      defaultValue={`${new Date(assignment.dueDate).getFullYear()}-${String(new Date(assignment.availableDate).getMonth() + 1).padStart(2, '0')}-${String(new Date(assignment.availableDate).getDate()).padStart(2, '0')}`}/>
                     </div>
                   </div>
                   <div className="mb-3 wd-grid-col-half-page">
                     <label className="mt-2 mb-2 pe-3 float-start ps-2"><b>Until</b></label>
                     <div className="wd-grid-row">
-                      <input className="form-control" type="date"/>
+                      <input className="form-control" type="date" 
+                      defaultValue={`${new Date(assignment.dueDate).getFullYear()}-${String(new Date(assignment.dueDate).getMonth() + 1).padStart(2, '0')}-${String(new Date(assignment.dueDate).getDate()).padStart(2, '0')}`}/>
                     </div>
                   </div>
               </div>
             </div>
           </div>
+            <Link className="wd-assignment-link"
+                            to="../Assignments">
+                            <button id="wd-save-btn" className="btn btn-lg btn-danger me-1 float-end">Save</button>
+            </Link>
+            <Link className="wd-assignment-link"
+                            to="../Assignments">
+                            <button id="wd-cancel-btn" className="btn btn-lg btn-secondary btn-danger me-1 float-end">Cancel</button>
+            </Link>
         </div>
       </div>
     </div>
