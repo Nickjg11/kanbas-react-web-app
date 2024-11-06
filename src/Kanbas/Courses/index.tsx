@@ -7,10 +7,12 @@ import Home from "./Home";
 import { Navigate, Route, Routes, useParams, useLocation } from "react-router";
 import { FaAlignJustify } from "react-icons/fa";
 import PeopleTable from "./People/Table";
-export default function Courses() {
+import { useSelector } from "react-redux";
+export default function Courses({ courses }: { courses: any[]; }) {
   const { cid } = useParams();
   const course = courses.find((course) => course._id === cid);
   const { pathname } = useLocation();
+  const { currentUser } = useSelector((state: any) => state.accountReducer);
   return (
     <div id="wd-courses">
       <h2 className="text-danger">
@@ -32,5 +34,5 @@ export default function Courses() {
         </Routes>
         </div></div>
     </div>
-
 );}
+

@@ -1,9 +1,23 @@
-import { useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import * as db from "../../Database";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { updateAssignment } from "./reducer";
 export default function AssignmentEditor() {
+  const cid = useLocation().pathname.split("/")[3];
   const { aid } = useParams();
-  const assignment = db.assignments.find((a) => a._id === aid);
+  const { assignments } = useSelector((state: any) => state.assignmentsReducer);
+  const assignment = assignments.find((a: { _id: string | undefined; }) => a._id === aid);
+  const [title, setTitle] = useState(assignment.title)
+  const [description, setDescription] = useState(assignment.description);
+  const [points, setPoints] = useState(assignment.points);
+  const [dueDate, setDueDate] = useState(assignment.dueDate);
+  const [availableFromDate, setAvailableFromDate] = useState(assignment.availableFromDate);
+  const [availableUntilDate, setAvailableUntilDate] = useState(assignment.availableUntilDate);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
     if (!assignment) return null;
     return (
       <div id="wd-assignments-editor">
@@ -12,13 +26,15 @@ export default function AssignmentEditor() {
             <label htmlFor="input1" className="form-label">
               Assignment Name</label>
             <input type="name" className="form-control"
-              id="input1" defaultValue={assignment.title}/>
+              id="input1" defaultValue={assignment.title}
+              onChange={(e) => {setTitle(e.target.value)}}/>
           </div>
           <div className="mb-3">
             <textarea className="form-control" 
               id="textarea1" 
               rows={15}
-              defaultValue={assignment.description}>
+              defaultValue={assignment.description}
+              onChange={(e) => setDescription(e.target.value)}>
             </textarea>
           </div>
           <div id="wd-css-left-right-layout">
@@ -27,7 +43,8 @@ export default function AssignmentEditor() {
                 <label className="mt-2 mb-2 pe-3 float-end">Points</label>
               </div>
               <div className="wd-grid-col-half-page">
-                <input className="form-control" type="number" defaultValue={assignment.points}/>
+                <input className="form-control" type="number" defaultValue={assignment.points}
+                onChange={(e) => setPoints(parseInt(e.target.value))}/>
               </div>
             </div>
             <div className="mb-3 wd-grid-row">
@@ -108,33 +125,44 @@ export default function AssignmentEditor() {
                   <b>Due</b>
                 </p>
                 <input className="mb-3 form-control" type="date" 
-                  defaultValue={`${new Date(assignment.dueDate).getFullYear()}-${String(new Date(assignment.dueDate).getMonth() + 1).padStart(2, '0')}-${String(new Date(assignment.dueDate).getDate()).padStart(2, '0')}`}/>
+                  defaultValue={`${new Date(assignment.dueDate).getFullYear()}-${String(new Date(assignment.dueDate).getMonth() + 1).padStart(2, '0')}-${String(new Date(assignment.dueDate).getDate()).padStart(2, '0')}`}
+                  onChange={(e) => setDueDate(e.target.value)}/>
                 <div className="wd-grid-row">
                   <div className="mb-3 wd-grid-col-half-page">
                     <label className="mt-2 mb-2 pe-3 float-start ps-2"><b>Available from</b></label>
                     <div className="wd-grid-row">
                       <input className="form-control" type="date"
-                      defaultValue={`${new Date(assignment.dueDate).getFullYear()}-${String(new Date(assignment.availableDate).getMonth() + 1).padStart(2, '0')}-${String(new Date(assignment.availableDate).getDate()).padStart(2, '0')}`}/>
+                      defaultValue={`${new Date(assignment.dueDate).getFullYear()}-${String(new Date(assignment.availableFromDate).getMonth() + 1).padStart(2, '0')}-${String(new Date(assignment.availableFromDate).getDate()).padStart(2, '0')}`}
+                      onChange={(e) => setAvailableFromDate(e.target.value)}/>
                     </div>
                   </div>
                   <div className="mb-3 wd-grid-col-half-page">
                     <label className="mt-2 mb-2 pe-3 float-start ps-2"><b>Until</b></label>
                     <div className="wd-grid-row">
                       <input className="form-control" type="date" 
-                      defaultValue={`${new Date(assignment.dueDate).getFullYear()}-${String(new Date(assignment.dueDate).getMonth() + 1).padStart(2, '0')}-${String(new Date(assignment.dueDate).getDate()).padStart(2, '0')}`}/>
+                      defaultValue={`${new Date(assignment.dueDate).getFullYear()}-${String(new Date(assignment.dueDate).getMonth() + 1).padStart(2, '0')}-${String(new Date(assignment.dueDate).getDate()).padStart(2, '0')}`}
+                      onChange={(e) => setAvailableUntilDate(e.target.value)}/>
                     </div>
                   </div>
               </div>
             </div>
           </div>
-            <Link className="wd-assignment-link"
+          <Link className="wd-assignment-link"
                             to="../Assignments">
-                            <button id="wd-save-btn" className="btn btn-lg btn-danger me-1 float-end">Save</button>
-            </Link>
-            <Link className="wd-assignment-link"
-                            to="../Assignments">
-                            <button id="wd-cancel-btn" className="btn btn-lg btn-secondary btn-danger me-1 float-end">Cancel</button>
-            </Link>
+            <button id="wd-save-btn" className="btn btn-lg btn-danger me-1 float-end"
+              onClick={() => {  dispatch(updateAssignment({ ...assignment, title: title, course: cid, description: description, points: points, dueDate: dueDate, availableFromDate: availableFromDate, availableUntilDate: availableUntilDate }))
+                                navigate(-1)
+                                console.log(assignments, cid)
+                        }}>
+              Save
+            </button>
+          </Link>
+          <Link className="wd-assignment-link"
+                          to="../Assignments">
+                          <button id="wd-cancel-btn" className="btn btn-lg btn-secondary btn-danger me-1 float-end">
+                            Cancel
+                          </button>
+          </Link>
         </div>
       </div>
     </div>
