@@ -15,6 +15,9 @@ export default function Lab5() {
         <a href={`${REMOTE_SERVER}/lab5/welcome`} className="list-group-item">
           Welcome
         </a>
+        <a href={`https://kanbas-node-server-app-z171.onrender.com`} className="list-group-item">
+          Server link
+        </a>
       </div><hr />
       <EnvironmentVariables />
       <PathParameters />
