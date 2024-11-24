@@ -8,10 +8,11 @@ import { TfiWrite } from "react-icons/tfi";
 import { IoEllipsisVertical } from "react-icons/io5";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react";
-import { addAssignment, deleteAssignment }
+import { useEffect, useState } from "react";
+import { setAssignments, addAssignment, deleteAssignment, updateAssignment }
   from "./reducer";
-
+import * as coursesClient from "../client";
+import * as assignmentsClient from "./client";
 export default function Assignments() {
   const { cid } = useParams();
   const { currentUser } = useSelector((state: any) => state.accountReducer);
@@ -19,6 +20,25 @@ export default function Assignments() {
   const { assignments } = useSelector((state: any) => state.assignmentsReducer);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const removeAssignment = async (assignmentId: string) => {
+    await assignmentsClient.deleteAssignment(assignmentId);
+    dispatch(deleteAssignment(assignmentId));
+  };
+  const createAssignmentForCourse = async (time: string) => {
+    if (!cid) return;
+    const newAssignment = { _id: time, name: assignmentName, course: cid };
+    const assignment = await coursesClient.createAssignmentForCourse(cid, newAssignment);
+    dispatch(addAssignment(assignment));
+  };
+
+  const fetchAssignments = async () => {
+    const assignments = await coursesClient.findAssignmentsForCourse(cid as string);
+    dispatch(setAssignments(assignments));
+  };
+  useEffect(() => {
+    fetchAssignments();
+  }, []);
+
   return (
     <div id="wd-assignments">
       <input type="search" 
@@ -26,9 +46,9 @@ export default function Assignments() {
         placeholder="Search..."/>
       {currentUser.role === "FACULTY" && (
         <button id="wd-add-assignment" className="btn btn-lg btn-danger me-1 float-end"
-          onClick={() => { const time = new Date().getTime().toString();
-                            dispatch(addAssignment({ _id: time, title: "", description: "", points: "", dueDate: "", availableFromDate: "", availableUntilDate: "" }))
-                            navigate(time.toString())}}>
+          onClick={async () => {  const time = Date.now().toString();
+                            await createAssignmentForCourse(time);
+                            navigate(time)}}>
         <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
         Assignment
       </button>
@@ -57,7 +77,6 @@ export default function Assignments() {
           </div>
           <ul className="wd-lessons list-group rounded-0">
           {assignments
-            .filter((assignment: any) => assignment.course === cid)
             .map((assignment: any) => (
               <li id="assignment1" className="wd-lesson list-group-item p-2 ps-1">
                   <div className="assignments-list">
@@ -83,7 +102,7 @@ export default function Assignments() {
                       </div>
                         <span className="ms-auto">
                           <AssignmentControlButtons assignmentId={assignment._id}
-                            deleteAssignment={() => dispatch(deleteAssignment(assignment._id))}/>
+                            deleteAssignment={(assignmentId) => removeAssignment(assignmentId)}/>
                         </span>
                     </div>
                   </div>

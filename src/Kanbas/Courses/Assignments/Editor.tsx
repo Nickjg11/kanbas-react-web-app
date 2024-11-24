@@ -1,23 +1,38 @@
 import { useLocation, useNavigate, useParams } from "react-router";
 import * as db from "../../Database";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateAssignment } from "./reducer";
+import { setAssignments, updateAssignment } from "./reducer";
+import * as assignmentsClient from "./client";
+import * as coursesClient from "../client";
 export default function AssignmentEditor() {
   const cid = useLocation().pathname.split("/")[3];
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { aid } = useParams();
   const { assignments } = useSelector((state: any) => state.assignmentsReducer);
+  const fetchAssignments = async () => {
+    const assignments = await coursesClient.findAssignmentsForCourse(cid as string);
+    dispatch(setAssignments(assignments));
+  };
+  useEffect(() => {
+    fetchAssignments();
+  }, []);
+  console.log("looking for " + aid);
   const assignment = assignments.find((a: { _id: string | undefined; }) => a._id === aid);
-  const [title, setTitle] = useState(assignment.title)
+  console.log("result of find " + assignment);
+  const [title, setTitle] = useState(assignment.title);
   const [description, setDescription] = useState(assignment.description);
   const [points, setPoints] = useState(assignment.points);
   const [dueDate, setDueDate] = useState(assignment.dueDate);
   const [availableFromDate, setAvailableFromDate] = useState(assignment.availableFromDate);
   const [availableUntilDate, setAvailableUntilDate] = useState(assignment.availableUntilDate);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
 
+  const saveAssignment = async (assignment: any) => {
+    await assignmentsClient.updateAssignment(assignment);
+    dispatch(updateAssignment(assignment));
+  };
     if (!assignment) return null;
     return (
       <div id="wd-assignments-editor">
@@ -150,7 +165,7 @@ export default function AssignmentEditor() {
           <Link className="wd-assignment-link"
                             to="../Assignments">
             <button id="wd-save-btn" className="btn btn-lg btn-danger me-1 float-end"
-              onClick={() => {  dispatch(updateAssignment({ ...assignment, title: title, course: cid, description: description, points: points, dueDate: dueDate, availableFromDate: availableFromDate, availableUntilDate: availableUntilDate }))
+                          onClick={() => { saveAssignment({ ...assignment, title: title, course: cid, description: description, points: points, dueDate: dueDate, availableFromDate: availableFromDate, availableUntilDate: availableUntilDate })
                                 navigate(-1)
                                 console.log(assignments, cid)
                         }}>

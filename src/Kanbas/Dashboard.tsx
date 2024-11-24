@@ -1,18 +1,50 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
-import * as db from "./Database";
+import { json, Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
+import * as enrollmentsClient from "./Courses/Enrollments/client";
+import * as userClient from "./Account/client";
+import * as courseClient from "./Courses/client";
+import { setEnrollments, addEnrollment, deleteEnrollment } from "./Courses/Enrollments/reducer";
+import JsonStringify from "../Labs/Lab3/JsonStringify";
 export default function Dashboard(
-  { courses, course, setCourse, addNewCourse,
-    deleteCourse, updateCourse, enrollments, enroll, unenroll }: {
-    courses: any[]; course: any; setCourse: (course: any) => void;
+  { course, setCourse, addNewCourse,
+    deleteCourse, updateCourse }: {
+    courses: any[]; course: any; setCourse: (course: any) => void; fetchCourses: () => void;
     addNewCourse: () => void; deleteCourse: (course: any) => void;
-    updateCourse: () => void; 
-    enrollments : any[]; enroll: (course: any, student: any) => void;
-    unenroll: (course: any, student: any) => void;})
+    updateCourse: () => void;})
  {
+  const [courses, setCourses] = useState<any[]>([]);
+  const { enrollments } = useSelector((state: any) => state.enrollmentsReducer);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
-  const [enrollmentsToggle, setEnrollmentsToggle] = useState(false);
+  const [enrollmentsOnly, setEnrollmentsOnly] = useState(false);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    updateEnrollments(currentUser._id)
+    fetchEnrollments()
+  }, []);
+  const fetchCourses = async () => {
+      const c = await courseClient.fetchAllCourses();
+      setCourses(c);
+  };
+  const removeEnrollment = async (courseId: string, userId: string) => {
+    await enrollmentsClient.deleteEnrollment(courseId, userId);
+    dispatch(deleteEnrollment({courseId, userId}));
+  };
+  const createEnrollment = async (courseId: string, userId: string) => {
+    const enrollment = await enrollmentsClient.createEnrollment(courseId, userId);
+    dispatch(addEnrollment(enrollment));
+  };
+  const updateEnrollments = async (userId: string) => {
+    const e = await enrollmentsClient.findEnrollmentsForUser(userId);
+    dispatch(setEnrollments(e));
+  };
+  const fetchEnrollments = async () => {
+    const c = await courseClient.fetchAllCourses();
+    const e = await enrollmentsClient.findEnrollmentsForUser(currentUser._id)
+    const enrollments = c.filter((course: any) => e.some((enrollment: any) => enrollment.user === currentUser._id && enrollment.course === course._id))
+    setCourses(enrollments);
+};
+
   return (
     <div id="wd-dashboard">
       <h1 id="wd-dashboard-title">Dashboard</h1> <hr />
@@ -38,19 +70,20 @@ export default function Dashboard(
         <div>
             <button className="btn btn-primary float-end"
                     id="wd-add-new-course-click"
-                    onClick={() => setEnrollmentsToggle(!enrollmentsToggle)} > 
+                    onClick={() => { setEnrollmentsOnly(!enrollmentsOnly);
+                                     if (enrollmentsOnly) {
+                                      fetchEnrollments()
+                                     }
+                                     else {
+                                      fetchCourses()
+                                     }
+                    } } > 
               Enrollments </button>
         </div>)}
       <h2 id="wd-dashboard-published">Published Courses ({courses.length})</h2> <hr />
       <div id="wd-dashboard-courses" className="row">
         <div className="row row-cols-1 row-cols-md-5 g-4">
-          {enrollmentsToggle && (courses
-              .filter((course) =>
-                enrollments.some(
-                  (enrollment) =>
-                    enrollment.user === currentUser._id &&
-                    enrollment.course === course._id
-                  ))
+          {!enrollmentsOnly && (courses
               .map((course) => (
                 <div className="wd-dashboard-course col" style={{ width: "300px" }}>
                   <div className="card rounded-3 overflow-hidden">
@@ -72,19 +105,23 @@ export default function Dashboard(
                                 Delete
                             </button>
                         )}
-                        {currentUser.role === "STUDENT" && enrollments.filter((enrollment) => enrollment.user === currentUser._id && enrollment.course === course._id).length === 0 && (
+                        {currentUser.role === "STUDENT" && enrollments.filter((enrollment: any) => enrollment.user === currentUser._id && enrollment.course === course._id).length === 0 && (
                             <button onClick={(event) => {
                                   event.preventDefault();
-                                  enroll(course._id, currentUser._id);
+                                  createEnrollment(course._id, currentUser._id);
+                                  updateEnrollments(currentUser._id)
+                                  fetchEnrollments()
                                 }} className="btn btn-success float-end"
                                 id="wd-delete-course-click">
                                 Enroll
                             </button>
                         )}
-                        {currentUser.role === "STUDENT" && enrollments.filter((enrollment) => enrollment.user === currentUser._id && enrollment.course === course._id).length !== 0 && (
+                        {currentUser.role === "STUDENT" && enrollments.filter((enrollment: any) => enrollment.user === currentUser._id && enrollment.course === course._id).length !== 0 && (
                             <button onClick={(event) => {
                                   event.preventDefault();
-                                  unenroll(course._id, currentUser._id);
+                                  removeEnrollment(course._id, currentUser._id);
+                                  updateEnrollments(currentUser._id)
+                                  fetchEnrollments()
                                 }} className="btn btn-danger float-end"
                                 id="wd-delete-course-click">
                                 Unenroll
@@ -106,7 +143,7 @@ export default function Dashboard(
                 </div>
               )))
           }
-          {!enrollmentsToggle && (courses
+          {enrollmentsOnly && (courses
               .map((course) => (
                 <div className="wd-dashboard-course col" style={{ width: "300px" }}>
                   <div className="card rounded-3 overflow-hidden">
@@ -128,19 +165,23 @@ export default function Dashboard(
                                 Delete
                             </button>
                         )}
-                        {currentUser.role === "STUDENT" && enrollments.filter((enrollment) => enrollment.user === currentUser._id && enrollment.course === course._id).length === 0 && (
+                        {currentUser.role === "STUDENT" && enrollments.filter((enrollment: any) => enrollment.user === currentUser._id && enrollment.course === course._id).length === 0 && (
                             <button onClick={(event) => {
                                   event.preventDefault();
-                                  enroll(course._id, currentUser._id);
+                                  createEnrollment(course._id, currentUser._id);
+                                  updateEnrollments(currentUser._id)
+                                  fetchCourses()
                                 }} className="btn btn-success float-end"
                                 id="wd-delete-course-click">
                                 Enroll
                             </button>
                         )}
-                        {currentUser.role === "STUDENT" && enrollments.filter((enrollment) => enrollment.user === currentUser._id && enrollment.course === course._id).length !== 0 && (
+                        {currentUser.role === "STUDENT" && enrollments.filter((enrollment: any) => enrollment.user === currentUser._id && enrollment.course === course._id).length !== 0 && (
                             <button onClick={(event) => {
                                   event.preventDefault();
-                                  unenroll(course._id, currentUser._id);
+                                  removeEnrollment(course._id, currentUser._id);
+                                  updateEnrollments(currentUser._id)
+                                  fetchCourses()
                                 }} className="btn btn-danger float-end"
                                 id="wd-delete-course-click">
                                 Unenroll
