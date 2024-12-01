@@ -6,14 +6,14 @@ import * as userClient from "./Account/client";
 import * as courseClient from "./Courses/client";
 import { setEnrollments, addEnrollment, deleteEnrollment } from "./Courses/Enrollments/reducer";
 import JsonStringify from "../Labs/Lab3/JsonStringify";
+import { addCourse, deleteCourse, updateCourse } from "./Courses/reducer";
 export default function Dashboard(
-  { course, setCourse, addNewCourse,
-    deleteCourse, updateCourse }: {
-    courses: any[]; course: any; setCourse: (course: any) => void; fetchCourses: () => void;
-    addNewCourse: () => void; deleteCourse: (course: any) => void;
-    updateCourse: () => void;})
+  { course, courses, setCourse, setCourses, addNewCourse,
+    deleteCourse, updateCourse, }: {
+    course: any; courses: any; setCourse: (course: any) => void; 
+    setCourses: (course: any) => void; addNewCourse: () => void;
+    deleteCourse: (courseId: any) => void; updateCourse: () => void;})
  {
-  const [courses, setCourses] = useState<any[]>([]);
   const { enrollments } = useSelector((state: any) => state.enrollmentsReducer);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const [enrollmentsOnly, setEnrollmentsOnly] = useState(false);
@@ -43,7 +43,22 @@ export default function Dashboard(
     const e = await enrollmentsClient.findEnrollmentsForUser(currentUser._id)
     const enrollments = c.filter((course: any) => e.some((enrollment: any) => enrollment.user === currentUser._id && enrollment.course === course._id))
     setCourses(enrollments);
-};
+  };
+  /*
+  const addNewCourse = async (time: string) => {
+    const newAssignment = { _id: time };
+    const assignment = await userClient.createCourse(newAssignment);
+    dispatch(addCourse(assignment));
+  };
+  const removeCourse = async (courseId: string) => {
+    await courseClient.deleteCourse(courseId);
+    dispatch(deleteCourse(courseId));
+  };
+  const doUpdateCourse = async (course: string) => {
+    const c = await courseClient.updateCourse(course);
+    dispatch(updateCourse(c));
+  };
+  */
 
   return (
     <div id="wd-dashboard">
@@ -53,10 +68,16 @@ export default function Dashboard(
           <h5>New Course
             <button className="btn btn-primary float-end"
                     id="wd-add-new-course-click"
-                    onClick={addNewCourse} > 
+                    onClick={(event) => {
+                      event.preventDefault();
+                      addNewCourse();
+                    }} > 
               Add </button>
             <button className="btn btn-warning float-end me-2"
-                  onClick={updateCourse} id="wd-update-course-click">
+                  onClick={(event) => {
+                    event.preventDefault();
+                    updateCourse();
+                  }} id="wd-update-course-click">
               Update
             </button>
           </h5><br />
@@ -84,7 +105,7 @@ export default function Dashboard(
       <div id="wd-dashboard-courses" className="row">
         <div className="row row-cols-1 row-cols-md-5 g-4">
           {!enrollmentsOnly && (courses
-              .map((course) => (
+              .map((course: any) => (
                 <div className="wd-dashboard-course col" style={{ width: "300px" }}>
                   <div className="card rounded-3 overflow-hidden">
                     <Link to={`/Kanbas/Courses/${course._id}/Home`}
@@ -144,7 +165,7 @@ export default function Dashboard(
               )))
           }
           {enrollmentsOnly && (courses
-              .map((course) => (
+              .map((course: any) => (
                 <div className="wd-dashboard-course col" style={{ width: "300px" }}>
                   <div className="card rounded-3 overflow-hidden">
                     <Link to={`/Kanbas/Courses/${course._id}/Home`}

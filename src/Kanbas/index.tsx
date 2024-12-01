@@ -9,9 +9,10 @@ import ProtectedRoute from "./Account/ProtectedRoute";
 import ProtectedCourseRoute from "./Account/ProtectedCourseRoute";
 import Session from "./Account/Session";
 import * as userClient from "./Account/client";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import * as courseClient from "./Courses/client";
 export default function Kanbas() {
+  const dispatch = useDispatch();
   const [courses, setCourses] = useState<any[]>([]);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const fetchCourses = async () => {
@@ -33,22 +34,17 @@ export default function Kanbas() {
     const newCourse = await userClient.createCourse(course);
     setCourses([...courses,  newCourse]);
   };
-  const deleteCourse = async (courseId: any) => {
+  const deleteCourse = async (courseId: string) => {
     const status = await courseClient.deleteCourse(courseId);
     setCourses(courses.filter((course) => course._id !== courseId));
   };
   const updateCourse = async () => {
     await courseClient.updateCourse(course);
-    setCourses(
-      courses.map((c) => {
-        if (c._id === course._id) {
-          return course;
-        } else {
-          return c;
-        }
-      })
-    );
-  };
+    setCourses(courses.map((c) => {
+        if (c._id === course._id) { return course; }
+        else { return c; }
+    })
+  );};
 
   const [enrollments, setEnrollments] = useState<any[]>([]);
 
@@ -64,7 +60,7 @@ export default function Kanbas() {
               course={course}
               courses={courses}
               setCourse={setCourse}
-              fetchCourses={fetchCourses}
+              setCourses={setCourses}
               addNewCourse={addNewCourse}
               deleteCourse={deleteCourse}
               updateCourse={updateCourse}/>
