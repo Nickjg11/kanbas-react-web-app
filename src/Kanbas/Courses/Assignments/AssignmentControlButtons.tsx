@@ -10,7 +10,6 @@ export default function AssignmentControlButtons(
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   return (
     <div className="float-end">
-      { assignmentId }
       <GreenCheckmark />
       <IoEllipsisVertical className="fs-4" />
       {currentUser.role === "FACULTY" && (
