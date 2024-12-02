@@ -16,7 +16,7 @@ import * as assignmentsClient from "./client";
 export default function Assignments() {
   const { cid } = useParams();
   const { currentUser } = useSelector((state: any) => state.accountReducer);
-  const [ assignmentName, setAssignmentName] = useState("");
+  const [ assignmentTitle, setAssignmentTitle] = useState("");
   const { assignments } = useSelector((state: any) => state.assignmentsReducer);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ export default function Assignments() {
   };
   const createAssignmentForCourse = async (time: string) => {
     if (!cid) return;
-    const newAssignment = { _id: time, name: assignmentName, course: cid };
+    const newAssignment = { _id: time, title: assignmentTitle, course: cid };
     const assignment = await coursesClient.createAssignmentForCourse(cid, newAssignment);
     dispatch(addAssignment(assignment));
   };
@@ -77,7 +77,7 @@ export default function Assignments() {
           </div>
           <ul className="wd-lessons list-group rounded-0">
           {assignments
-            .map((assignment: any) => (
+            .map((a: any) => (
               <li id="assignment1" className="wd-lesson list-group-item p-2 ps-1">
                   <div className="assignments-list">
                     <div className="d-flex align-items-center">
@@ -87,22 +87,21 @@ export default function Assignments() {
                       <div>
                         {currentUser.role === "FACULTY" ? 
                           (<Link className="wd-assignment-link"
-                              to={assignment._id}>
-                              <h5><b>{assignment.title}</b></h5>
+                              to={a._id}>
+                              <h5><b>{a.title}</b></h5>
                             </Link>) :
                             (<Link className="wd-assignment-link"
-                              to={assignment}>
-                              <h5><b>{assignment.title}</b></h5>
+                              to={a}>
+                              <h5><b>{a.title}</b></h5>
                             </Link>)
                         }
                         <p><span className="wd-fg-color-red">Multiple Modules</span> 
-                          | <b>Not available until</b> {new Date(assignment.availableFromDate).toLocaleString('en-US', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
-                          | <br/><b>Due</b> {new Date(assignment.dueDate).toLocaleString('en-US', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
-                          | {assignment.points} pts</p>
+                          | <b>Not available until</b> {new Date(a.availableFromDate).toLocaleString('en-US', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
+                          | <br/><b>Due</b> {new Date(a.dueDate).toLocaleString('en-US', { month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}
+                          | {a.points} pts</p>
                       </div>
                         <span className="ms-auto">
-                          <AssignmentControlButtons assignmentId={assignment._id}
-                            deleteAssignment={(assignmentId) => removeAssignment(assignmentId)}/>
+                          <AssignmentControlButtons assignmentId={a._id} deleteAssignment={removeAssignment}/>
                         </span>
                     </div>
                   </div>

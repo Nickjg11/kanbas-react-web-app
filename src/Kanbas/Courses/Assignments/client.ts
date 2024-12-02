@@ -6,6 +6,7 @@ export const updateAssignment = async (assignment: any) => {
     return data;
   };  
 export const deleteAssignment = async (assignmentId: string) => {
+ console.log(assignmentId)
  const response = await axios.delete(`${ASSIGNMENTS_API}/${assignmentId}`);
  return response.data;
 };

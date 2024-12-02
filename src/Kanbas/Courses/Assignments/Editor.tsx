@@ -19,9 +19,7 @@ export default function AssignmentEditor() {
   useEffect(() => {
     fetchAssignments();
   }, []);
-  console.log("looking for " + aid);
   const assignment = assignments.find((a: { _id: string | undefined; }) => a._id === aid);
-  console.log("result of find " + assignment);
   const [title, setTitle] = useState(assignment.title);
   const [description, setDescription] = useState(assignment.description);
   const [points, setPoints] = useState(assignment.points);
