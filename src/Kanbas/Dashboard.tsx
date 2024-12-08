@@ -177,7 +177,7 @@ export default function Dashboard(
                         <p className="wd-dashboard-course-title card-text overflow-y-hidden" style={{ maxHeight: 100 }}>
                           {course.description} </p>
                         <button className="btn btn-primary"> Go </button>
-                        {currentUser.role === "FACULTY" && (
+                        {(currentUser.role === "FACULTY" || currentUser.role === "ADMIN") && (
                             <button onClick={(event) => {
                                   event.preventDefault();
                                   deleteCourse(course._id);
@@ -208,7 +208,7 @@ export default function Dashboard(
                                 Unenroll
                             </button>
                         )}
-                        {currentUser.role === "FACULTY" && (
+                        {(currentUser.role === "FACULTY" || currentUser.role === "ADMIN") && (
                           <button id="wd-edit-course-click"
                             onClick={(event) => {
                               event.preventDefault();
