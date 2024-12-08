@@ -34,8 +34,13 @@ export const findMyCourses = async () => {
     return data;
   };
 export const signin = async (credentials: any) => {
+  try {
   const response = await axiosWithCredentials.post( `${USERS_API}/signin`, credentials );
   return response.data;
+  }
+  catch {
+    console.log(credentials)
+  }
 };
 export const signup = async (user: any) => {
     const response = await axiosWithCredentials.post(`${USERS_API}/signup`, user);
