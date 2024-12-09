@@ -12,7 +12,7 @@ export default function AssignmentControlButtons(
     <div className="float-end">
       <GreenCheckmark />
       <IoEllipsisVertical className="fs-4" />
-      {currentUser.role === "FACULTY" && (
+      {currentUser.role === "FACULTY" || currentUser.role === "ADMIN" && (
         <button id="wd-delete-assignment-btn" onClick={() => deleteAssignment(assignmentId)}>
           <FaTrash className="text-danger me-2 mb-1"/>
         </button>

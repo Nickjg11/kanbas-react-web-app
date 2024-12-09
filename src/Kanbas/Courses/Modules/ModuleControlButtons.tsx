@@ -12,10 +12,10 @@ export default function ModuleControlButtons(
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   return (
     <div className="float-end">
-      {currentUser.role === "FACULTY" && (
+      {currentUser.role === "FACULTY" || currentUser.role === "ADMIN" && (
         <FaPencil onClick={() => editModule(moduleId)} className="text-primary me-3" />
       )}
-      {currentUser.role === "FACULTY" && (
+      {currentUser.role === "FACULTY" || currentUser.role === "ADMIN" && (
         <FaTrash className="text-danger me-2 mb-1" onClick={() => deleteModule(moduleId)}/>
       )}
       <GreenCheckmark />

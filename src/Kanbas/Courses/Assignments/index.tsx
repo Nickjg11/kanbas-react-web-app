@@ -24,11 +24,12 @@ export default function Assignments() {
     await assignmentsClient.deleteAssignment(assignmentId);
     dispatch(deleteAssignment(assignmentId));
   };
-  const createAssignmentForCourse = async (time: string) => {
+  const createAssignmentForCourse = async () => {
     if (!cid) return;
-    const newAssignment = { _id: time, title: assignmentTitle, course: cid };
+    const newAssignment = {title: "", course: cid };
     const assignment = await coursesClient.createAssignmentForCourse(cid, newAssignment);
     dispatch(addAssignment(assignment));
+    return assignment;
   };
 
   const fetchAssignments = async () => {
@@ -44,16 +45,15 @@ export default function Assignments() {
       <input type="search" 
         id="wd-search-assignment"
         placeholder="Search..."/>
-      {currentUser.role === "FACULTY" && (
+      {currentUser.role === "FACULTY" || currentUser.role === "ADMIN" && (
         <button id="wd-add-assignment" className="btn btn-lg btn-danger me-1 float-end"
-          onClick={async () => {  const time = Date.now().toString();
-                            await createAssignmentForCourse(time);
-                            navigate(time)}}>
+          onClick={async () => {  const a = await createAssignmentForCourse();
+                                  navigate(a._id)}}>
         <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
         Assignment
       </button>
       )}
-      {currentUser.role === "FACULTY" && (
+      {currentUser.role === "FACULTY" || currentUser.role === "ADMIN" && (
         <button id="wd-add-assignment-group" className="btn btn-lg btn-secondary btn-danger me-1 float-end">
           <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
           Group</button>                
@@ -85,7 +85,7 @@ export default function Assignments() {
                       <BsGripVertical className="fs-3" />
                       <TfiWrite className="me-3 fs-4" />
                       <div>
-                        {currentUser.role === "FACULTY" ? 
+                        {currentUser.role === "FACULTY" || currentUser.role === "ADMIN" ? 
                           (<Link className="wd-assignment-link"
                               to={a._id}>
                               <h5><b>{a.title}</b></h5>

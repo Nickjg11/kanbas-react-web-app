@@ -9,16 +9,19 @@ import JsonStringify from "../Labs/Lab3/JsonStringify";
 import { addCourse, deleteCourse, updateCourse } from "./Courses/reducer";
 export default function Dashboard(
   { course, courses, setCourse, setCourses, addNewCourse,
-    deleteCourse, updateCourse, }: {
+    deleteCourse, updateCourse, enrolling, setEnrolling, updateEnrollment }: {
     course: any; courses: any; setCourse: (course: any) => void; 
     setCourses: (course: any) => void; addNewCourse: () => void;
-    deleteCourse: (courseId: any) => void; updateCourse: () => void;})
+    deleteCourse: (courseId: any) => void; updateCourse: () => void;
+    enrolling: boolean; setEnrolling: (enrolling: boolean) => void;
+    updateEnrollment: (courseId: string, enrolled: boolean) => void})
  {
   const { enrollments } = useSelector((state: any) => state.enrollmentsReducer);
   const { currentUser } = useSelector((state: any) => state.accountReducer);
   const [enrollmentsOnly, setEnrollmentsOnly] = useState(false);
   const dispatch = useDispatch();
   useEffect(() => {
+    console.log("courses", courses)
     updateEnrollments(currentUser._id)
     fetchEnrollments()
   }, []);
@@ -39,26 +42,9 @@ export default function Dashboard(
     dispatch(setEnrollments(e));
   };
   const fetchEnrollments = async () => {
-    const c = await courseClient.fetchAllCourses();
-    const e = await enrollmentsClient.findEnrollmentsForUser(currentUser._id)
-    const enrollments = c.filter((course: any) => e.some((enrollment: any) => enrollment.user === currentUser._id && enrollment.course === course._id))
+    const enrollments = await enrollmentsClient.findEnrollmentsForUser(currentUser._id)
     setCourses(enrollments);
   };
-  /*
-  const addNewCourse = async (time: string) => {
-    const newAssignment = { _id: time };
-    const assignment = await userClient.createCourse(newAssignment);
-    dispatch(addCourse(assignment));
-  };
-  const removeCourse = async (courseId: string) => {
-    await courseClient.deleteCourse(courseId);
-    dispatch(deleteCourse(courseId));
-  };
-  const doUpdateCourse = async (course: string) => {
-    const c = await courseClient.updateCourse(course);
-    dispatch(updateCourse(c));
-  };
-  */
 
   return (
     <div id="wd-dashboard">
@@ -89,22 +75,14 @@ export default function Dashboard(
         </div>)}
         {currentUser.role === "STUDENT" && (
         <div>
-            <button className="btn btn-primary float-end"
-                    id="wd-add-new-course-click"
-                    onClick={() => { setEnrollmentsOnly(!enrollmentsOnly);
-                                     if (enrollmentsOnly) {
-                                      fetchEnrollments()
-                                     }
-                                     else {
-                                      fetchCourses()
-                                     }
-                    } } > 
-              Enrollments </button>
+            <button onClick={() => setEnrolling(!enrolling)} className="float-end btn btn-primary" >
+          {enrolling ? "My Courses" : "All Courses"}
+        </button>
         </div>)}
       <h2 id="wd-dashboard-published">Published Courses ({courses.length})</h2> <hr />
       <div id="wd-dashboard-courses" className="row">
         <div className="row row-cols-1 row-cols-md-5 g-4">
-          {!enrollmentsOnly && (courses
+          {courses
               .map((course: any) => (
                 <div className="wd-dashboard-course col" style={{ width: "300px" }}>
                   <div className="card rounded-3 overflow-hidden">
@@ -113,66 +91,15 @@ export default function Dashboard(
                       <img src="/images/reactjs.webp" width="100%" height={160} />
                       <div className="card-body">
                         <h5 className="wd-dashboard-course-title card-title">
-                          {course.name} </h5>
-                        <p className="wd-dashboard-course-title card-text overflow-y-hidden" style={{ maxHeight: 100 }}>
-                          {course.description} </p>
-                        <button className="btn btn-primary"> Go </button>
-                        {currentUser.role === "FACULTY" && (
+                          {enrolling && (
                             <button onClick={(event) => {
-                                  event.preventDefault();
-                                  deleteCourse(course._id);
-                                }} className="btn btn-danger float-end"
-                                id="wd-delete-course-click">
-                                Delete
+                                        event.preventDefault();
+                                        updateEnrollment(course._id, !course.enrolled);
+                                    }}
+                                    className={`btn ${ course.enrolled ? "btn-danger" : "btn-success" } float-end`} >
+                              {course.enrolled ? "Unenroll" : "Enroll"}
                             </button>
-                        )}
-                        {currentUser.role === "STUDENT" && enrollments.filter((enrollment: any) => enrollment.user === currentUser._id && enrollment.course === course._id).length === 0 && (
-                            <button onClick={(event) => {
-                                  event.preventDefault();
-                                  createEnrollment(course._id, currentUser._id);
-                                  updateEnrollments(currentUser._id)
-                                  fetchEnrollments()
-                                }} className="btn btn-success float-end"
-                                id="wd-delete-course-click">
-                                Enroll
-                            </button>
-                        )}
-                        {currentUser.role === "STUDENT" && enrollments.filter((enrollment: any) => enrollment.user === currentUser._id && enrollment.course === course._id).length !== 0 && (
-                            <button onClick={(event) => {
-                                  event.preventDefault();
-                                  removeEnrollment(course._id, currentUser._id);
-                                  updateEnrollments(currentUser._id)
-                                  fetchEnrollments()
-                                }} className="btn btn-danger float-end"
-                                id="wd-delete-course-click">
-                                Unenroll
-                            </button>
-                        )}
-                        {currentUser.role === "FACULTY" && (
-                          <button id="wd-edit-course-click"
-                            onClick={(event) => {
-                              event.preventDefault();
-                              setCourse(course);
-                            }}
-                            className="btn btn-warning me-2 float-end" >
-                            Edit
-                          </button>
-                        )}
-                      </div>
-                    </Link>
-                  </div>
-                </div>
-              )))
-          }
-          {enrollmentsOnly && (courses
-              .map((course: any) => (
-                <div className="wd-dashboard-course col" style={{ width: "300px" }}>
-                  <div className="card rounded-3 overflow-hidden">
-                    <Link to={`/Kanbas/Courses/${course._id}/Home`}
-                          className="wd-dashboard-course-link text-decoration-none text-dark" >
-                      <img src="/images/reactjs.webp" width="100%" height={160} />
-                      <div className="card-body">
-                        <h5 className="wd-dashboard-course-title card-title">
+                          )}
                           {course.name} </h5>
                         <p className="wd-dashboard-course-title card-text overflow-y-hidden" style={{ maxHeight: 100 }}>
                           {course.description} </p>
@@ -222,7 +149,7 @@ export default function Dashboard(
                     </Link>
                   </div>
                 </div>
-              )))
+              ))
           }
         </div>
       </div>
