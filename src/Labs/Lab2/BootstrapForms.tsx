@@ -121,7 +121,6 @@ export default function BootstrapForms() {
                 <input type="password" className="form-control" id="r2" />
               </div>
             </div>
-            <fieldset className="row mb-3">
               <legend className="col-form-label col-sm-2 pt-0">
                 Radios</legend>
               <div className="col-sm-10">
@@ -141,7 +140,6 @@ export default function BootstrapForms() {
                   <label className="form-check-label" htmlFor="r5">
                     Third disabled radio </label> </div>
               </div>
-            </fieldset>
             <div className="row mb-3">
               <div className="col-sm-10 offset-sm-2">
                 <div className="form-check">
